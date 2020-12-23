@@ -1,0 +1,32 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net5.0</TargetFramework>
+    <RootNamespace>kata_coffee_machine</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- <Compile Include="src/CoffeeMachine/Infrastructure.fs" /> -->
+    <Compile Include="src/CoffeeMachine/Domain.Model.fs" />
+    <Compile Include="src/CoffeeMachine/Infrastructure.fs" />
+    <Compile Include="src/CoffeeMachine/UseCases.fs" />
+    <Compile Include="tests/CoffeeMachine/UseCasesTests.fs" />
+    <Compile Include="tests/CoffeeMachine/Domain.ModelTests.fs" />
+    <Compile Include="tests/CoffeeMachine/InfrastructureTests.fs" />
+    <Compile Include="tests/CoffeeMachine/AcceptanceTests.fs" />
+    <!-- <Compile Include="tests/CoffeeMachine/OrderParsingTests.fs" /> -->
+    <Compile Include="Program.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Foq" Version="1.8.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.8.3" />
+    <PackageReference Include="xunit" Version="2.4.1" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.4.3">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+  </ItemGroup>
+
+</Project>
