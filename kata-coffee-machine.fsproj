@@ -7,7 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- <Compile Include="src/CoffeeMachine/Infrastructure.fs" /> -->
     <Compile Include="src/CoffeeMachine/Domain.Model.fs" />
     <Compile Include="src/CoffeeMachine/Infrastructure.fs" />
     <Compile Include="src/CoffeeMachine/UseCases.fs" />
@@ -15,8 +14,6 @@
     <Compile Include="tests/CoffeeMachine/Domain.ModelTests.fs" />
     <Compile Include="tests/CoffeeMachine/InfrastructureTests.fs" />
     <Compile Include="tests/CoffeeMachine/AcceptanceTests.fs" />
-    <!-- <Compile Include="tests/CoffeeMachine/OrderParsingTests.fs" /> -->
-    <Compile Include="Program.fs" />
   </ItemGroup>
 
   <ItemGroup>

@@ -2,8 +2,8 @@ module CoffeeMachine.InfrastructureTests
 
 open Xunit
 open CoffeeMachine.Domain.Model.Types
-open CoffeeMachine.Infrastructure
-open CoffeeMachine.Infrastructure.DrinkMakerWithStringProtocolAdapter
+open CoffeeMachine.Infrastructure.OutboundAdapters
+open CoffeeMachine.Infrastructure.OutboundAdapters.DrinkMakerWithStringProtocolAdapter
 open FSharp.Reflection
 
 type FakeDrinkMaker() =

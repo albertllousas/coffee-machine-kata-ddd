@@ -3,7 +3,7 @@ module CoffeMachine.AcceptanceTests
 open Xunit
 open CoffeeMachine.Domain.Model.Types
 open CoffeeMachine.Domain.Model.Dependencies
-open CoffeeMachine.Infrastructure
+open CoffeeMachine.Infrastructure.OutboundAdapters
 open CoffeeMachine
 
 module FakeApplication =
