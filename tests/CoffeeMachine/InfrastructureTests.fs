@@ -13,20 +13,20 @@ type FakeDrinkMaker() =
     override this.ReceiveCommand command =
         this.ReceivedCommands <- this.ReceivedCommands @ [ command ]
 
-let buildDrinkOrderOf drink sugar stick =
-    DrinkOrder.reconstitute drink sugar stick
+let buildDrinkOrderOf drink sugar stick totalOfMoney=
+    DrinkOrder.reconstitute drink sugar stick (TotalOfMoney totalOfMoney)
 
 type TestData() =
     static member Translations =
-        [ (buildDrinkOrderOf Tea NoSugar NoStick,               "T::")
-          (buildDrinkOrderOf Tea WithOneSugar WithStick,        "T:1:O")
-          (buildDrinkOrderOf Tea WithTwoSugars WithStick,       "T:2:O")
-          (buildDrinkOrderOf Chocolate NoSugar NoStick,         "H::")
-          (buildDrinkOrderOf Chocolate WithOneSugar WithStick,  "H:1:O")
-          (buildDrinkOrderOf Chocolate WithTwoSugars WithStick, "H:2:O")
-          (buildDrinkOrderOf Coffee NoSugar NoStick,            "C::")
-          (buildDrinkOrderOf Coffee WithOneSugar WithStick,     "C:1:O")
-          (buildDrinkOrderOf Coffee WithTwoSugars WithStick,    "C:2:O") ]
+        [ (buildDrinkOrderOf Tea NoSugar NoStick 0.4m,              "T::")
+          (buildDrinkOrderOf Tea WithOneSugar AddStick 0.4m,        "T:1:O")
+          (buildDrinkOrderOf Tea WithTwoSugars AddStick 0.4m,       "T:2:O")
+          (buildDrinkOrderOf Chocolate NoSugar NoStick 0.5m,        "H::")
+          (buildDrinkOrderOf Chocolate WithOneSugar AddStick 0.5m,  "H:1:O")
+          (buildDrinkOrderOf Chocolate WithTwoSugars AddStick 0.5m, "H:2:O")
+          (buildDrinkOrderOf Coffee NoSugar NoStick 0.6m,           "C::")
+          (buildDrinkOrderOf Coffee WithOneSugar AddStick 0.6m,     "C:1:O")
+          (buildDrinkOrderOf Coffee WithTwoSugars AddStick 0.6m,    "C:2:O") ]
         |> Seq.map FSharpValue.GetTupleFields
 
 type ``drink maker with string protocol adapter should``() =

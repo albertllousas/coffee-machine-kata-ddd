@@ -1,16 +1,20 @@
 namespace CoffeeMachine
 
 open CoffeeMachine.Domain.Model.Types
-
 open CoffeeMachine.Domain.Model.Dependencies
 
 module UseCases =
 
-    type DrinkRequest = {Drink: Drink; Sugar: Sugar}
+    type DrinkRequest = { DrinkId: string; Sugar: int; Money: decimal }
 
-    let serveDrink (prepareOrder: PrepareOrder) (makeDrink: MakeDrink) (request: DrinkRequest) =
-        prepareOrder request.Drink request.Sugar 
-        |> makeDrink
-
-    let forwardMessageToCustomer (displayMessage: DisplayMessage) message = displayMessage message
-
+    let serveDrink (findDrink: FindDrink)
+                   (displayErrorMessage: DisplayErrorMessage)
+                   (prepareOrder: PrepareOrder)
+                   (makeDrink: MakeDrink)
+                   (request: DrinkRequest)
+                   =
+        findDrink (DrinkId request.DrinkId)
+        |> Result.bind (prepareOrder request.Sugar request.Money)
+        |> Result.map makeDrink
+        |> Result.mapError displayErrorMessage
+        |> ignore

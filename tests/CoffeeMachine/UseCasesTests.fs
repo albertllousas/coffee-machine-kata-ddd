@@ -9,34 +9,39 @@ open Foq
 type Consume<'t> =
     abstract fn: 't -> unit
 
-type Function2<'a, 'b, 'c> =
-    abstract fn: 'a -> 'b -> 'c
+type Function<'a, 'b> =
+    abstract fn: 'a -> 'b
+
+type Function3<'a, 'b, 'c, 'd> =
+    abstract fn: 'a -> 'b -> 'c -> 'd
 
 type ``serve a drink usecase should``() =
 
     [<Fact>]
     let ``success serving a drink to a customer`` () =
-        let teaOrder =
-            DrinkOrder.reconstitute Tea NoSugar NoStick
-
-        let prepareOrderStub =
-            Mock<Function2<Drink, Sugar, DrinkOrder>>()
-                .Setup(fun mock -> <@ mock.fn Tea NoSugar @>)
-                .Returns(teaOrder)
+        let teaOrder = DrinkOrder.reconstitute Tea NoSugar NoStick (TotalOfMoney 0.5m)
+        let tea: Drink =
+            { DrinkId = DrinkId "tea"
+              DrinkType = Coffee
+              Price = Price 0.6m }
+        let findDrinkStub =
+            Mock<Function<DrinkId, Result<Drink, Error>>>()
+                .Setup(fun mock -> <@ mock.fn (DrinkId "tea") @>)
+                .Returns(Ok tea)
                 .Create()
-
+        let prepareOrderStub =
+            Mock<Function3<QuantityOfSugar, Money, Drink, Result<DrinkOrder, Error>>>()
+                .Setup(fun mock -> <@ mock.fn 0 0.5m tea @>)
+                .Returns(Ok teaOrder)
+                .Create()
         let makeDrinkMock = Mock.Of<Consume<DrinkOrder>>()
+        let displayErrorMessageMock = Mock.Of<Consume<Error>>()
+        let request: DrinkRequest =
+            { DrinkId = "tea"
+              Sugar = 0
+              Money = 0.5m }
 
-        serveDrink prepareOrderStub.fn makeDrinkMock.fn { Drink = Tea; Sugar = NoSugar }
+        serveDrink findDrinkStub.fn displayErrorMessageMock.fn prepareOrderStub.fn makeDrinkMock.fn request
+        |> ignore
 
         verify <@ makeDrinkMock.fn teaOrder @>
-
-type ``forward message usecase should``() =
-
-    [<Fact>]
-    let ``success displaying a message to the customer`` () =
-        let displayMessageMock = Mock.Of<Consume<Message>>()
-
-        forwardMessageToCustomer displayMessageMock.fn (Message("Hello"))
-
-        verify <@ displayMessageMock.fn (Message "Hello") @>
