@@ -5,9 +5,9 @@ open FSharpx.Result
 module Types =
 
     type Error = 
-            | NonExistentProduct of productCode: string
-            | InvalidQuantityOfSugar
-            | NotEnoughMoney of moneyMissing: decimal
+        | NonExistentProduct of productCode: string
+        | InvalidQuantityOfSugar
+        | NotEnoughMoney of moneyMissing: decimal
 
     type Sugar =
         | NoSugar
@@ -84,7 +84,7 @@ module Types =
         // active pattern    
         let (|DrinkOrder|) {drinkType = drinkType; sugar = sugar; stick = stick} =  (drinkType, sugar, stick)
 
-module Dependencies =
+module Dependencies = 
 
     module Aliases =
         type Money = decimal
