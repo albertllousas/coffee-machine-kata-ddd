@@ -5,7 +5,7 @@ open CoffeeMachine.Domain.Model.Dependencies
 
 module UseCases =
 
-    type DrinkRequest = { DrinkId: string; Sugar: int; Money: decimal }
+    type DrinkRequest = { DrinkId: string; Sugar: int; Money: decimal; ExtraHot: bool }
 
     let serveDrink (findDrink: FindDrink)
                    (displayErrorMessage: DisplayErrorMessage)
@@ -14,7 +14,7 @@ module UseCases =
                    (request: DrinkRequest)
                    =
         findDrink (DrinkId request.DrinkId)
-        |> Result.bind (prepareOrder request.Sugar request.Money)
+        |> Result.bind (prepareOrder request.Sugar request.Money request.ExtraHot)
         |> Result.map makeDrink
         |> Result.mapError displayErrorMessage
         |> ignore

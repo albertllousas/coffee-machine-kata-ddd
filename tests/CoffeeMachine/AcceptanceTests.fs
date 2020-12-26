@@ -10,6 +10,7 @@ let ``process a customer order`` () =
     let request: UseCases.DrinkRequest =
         { DrinkId = "tea"
           Sugar = 1
+          ExtraHot = false
           Money = 0.5m }
 
     app.Pad.ProcessCustomerOrder request
@@ -22,6 +23,7 @@ let ``display an error message when not enough money is provided`` () =
     let request: UseCases.DrinkRequest =
         { DrinkId = "tea"
           Sugar = 1
+          ExtraHot = false
           Money = 0.1m }
 
     app.Pad.ProcessCustomerOrder request

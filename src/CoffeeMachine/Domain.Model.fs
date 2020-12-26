@@ -34,10 +34,6 @@ module Types =
     
     type Message = Message of string
 
-    type Money = decimal
-
-    type QuantityOfSugar = int
-
     type DrinkId = DrinkId of string
 
     type Price = Price of decimal
@@ -46,42 +42,61 @@ module Types =
         | Tea
         | Coffee
         | Chocolate
+        | OrangeJuice
+    
+    type Temperature = 
+        | Normal
+        | ExtraHot
     
     type Drink = { DrinkId : DrinkId; DrinkType: DrinkType; Price: Price}
 
     type TotalOfMoney = TotalOfMoney of decimal
 
-    type DrinkOrder = private { drinkType: DrinkType; sugar: Sugar; stick: Stick; totalOfMoney: TotalOfMoney } with
+    type DrinkOrder = private { drinkType: DrinkType; sugar: Sugar; stick: Stick; temperature: Temperature; totalOfMoney: TotalOfMoney } with
         member this.DrinkType = this.drinkType
         member this.Sugar = this.sugar
         member this.Stick = this.stick
         member this.TotalOfMoney = this.totalOfMoney
+        member this.Temperature = this.temperature
 
     module DrinkOrder =
 
         let checkEnoughMoney (Price minimumExpected) moneyGiven =  
             if(moneyGiven >= minimumExpected) then Ok moneyGiven else Error (NotEnoughMoney (minimumExpected - moneyGiven))
 
-        let prepareWith (quantityOfSugar:QuantityOfSugar) (moneyGiven: Money) drink = 
+        let calculateTemperature extraHot drinkType = 
+            match drinkType with 
+            | OrangeJuice -> Normal
+            | _ -> if extraHot then ExtraHot else Normal
+
+        let prepareWith quantityOfSugar moneyGiven extraHot drink = 
             result {
                   let! sugar = Sugar.from quantityOfSugar
                   let! money = checkEnoughMoney drink.Price moneyGiven
                   let stick = Stick.from sugar 
-                  return { drinkType = drink.DrinkType; sugar = sugar; stick = stick; totalOfMoney = TotalOfMoney money }
+                  let temperature = calculateTemperature extraHot drink.DrinkType
+                  return { drinkType = drink.DrinkType; sugar = sugar; stick = stick; temperature = temperature; totalOfMoney = TotalOfMoney money }
             }
    
-        let reconstitute drinkType sugar stick totalOfMoney =  { drinkType = drinkType; sugar = sugar; stick = stick; totalOfMoney = totalOfMoney }
+        let reconstitute drinkType sugar stick temperature totalOfMoney =  
+            { drinkType = drinkType; sugar = sugar; stick = stick; temperature = temperature; totalOfMoney = totalOfMoney }
         
         // active pattern    
         let (|DrinkOrder|) {drinkType = drinkType; sugar = sugar; stick = stick} =  (drinkType, sugar, stick)
 
 module Dependencies =
 
+    module Aliases =
+        type Money = decimal
+        type QuantityOfSugar = int
+        type ExtraHot = bool
+    
     open Types
+    open Aliases
+
+    type PrepareOrder = QuantityOfSugar -> Money -> ExtraHot -> Drink -> Result<DrinkOrder, Error>
 
     type FindDrink = DrinkId -> Result<Drink, Error>
-
-    type PrepareOrder = QuantityOfSugar -> Money -> Drink -> Result<DrinkOrder, Error>
 
     type MakeDrink = DrinkOrder -> unit
 
@@ -103,3 +118,16 @@ module DomainServices =
         | InvalidQuantityOfSugar -> displayMessage (Message "Invalid quantity of sugar")
         | NonExistentProduct code -> displayMessage (Message $"Non existent product with code '{code}'")
        
+
+          // type DrinkOrdered = {a: string}
+
+    // type DomainEvent =
+    //     DrinkOrdered of DrinkOrdered 
+     
+    // let d = DrinkOrdered {a = ""}
+
+    // type DomainEvent =
+        // DrinkOrdered of string 
+
+    // let createEvents 
+    // publishEvents then check there 

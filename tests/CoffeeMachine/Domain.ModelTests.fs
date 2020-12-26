@@ -10,10 +10,11 @@ type ``drink order aggregate should``() =
         let coffee: Drink = {DrinkId = DrinkId "coffee"; DrinkType = Coffee; Price = Price 0.6m}
         let quantityOfSugar = 0
         let money = 0.6m
+        let extraHot = false
 
-        let result = DrinkOrder.prepareWith quantityOfSugar money coffee
+        let result = DrinkOrder.prepareWith quantityOfSugar money extraHot coffee
         
-        let expectedOrder = DrinkOrder.reconstitute Coffee NoSugar NoStick (TotalOfMoney 0.6m)
+        let expectedOrder = DrinkOrder.reconstitute Coffee NoSugar NoStick Normal (TotalOfMoney 0.6m)
         Assert.Equal(Ok expectedOrder, result)
 
     [<Fact>]
@@ -21,10 +22,35 @@ type ``drink order aggregate should``() =
         let coffee: Drink = {DrinkId = DrinkId "coffee"; DrinkType = Coffee; Price = Price 0.6m}
         let quantityOfSugar = 1
         let money = 0.6m
+        let extraHot = false
 
-        let result = DrinkOrder.prepareWith quantityOfSugar money coffee
+        let result = DrinkOrder.prepareWith quantityOfSugar money extraHot coffee
         
-        let expectedOrder = DrinkOrder.reconstitute Coffee WithOneSugar AddStick (TotalOfMoney 0.6m)
+        let expectedOrder = DrinkOrder.reconstitute Coffee WithOneSugar AddStick Normal (TotalOfMoney 0.6m)
+        Assert.Equal(Ok expectedOrder, result)
+
+    [<Fact>]
+    let ``be able to add extra hot drink `` () =
+        let coffee: Drink = {DrinkId = DrinkId "coffee"; DrinkType = Coffee; Price = Price 0.6m}
+        let quantityOfSugar = 1
+        let money = 0.6m
+        let extraHot = true
+
+        let result = DrinkOrder.prepareWith quantityOfSugar money extraHot coffee
+        
+        let expectedOrder = DrinkOrder.reconstitute Coffee WithOneSugar AddStick ExtraHot (TotalOfMoney 0.6m)
+        Assert.Equal(Ok expectedOrder, result)
+
+    [<Fact>]
+    let ``disable hot drink if orange juice`` () =
+        let coffee: Drink = {DrinkId = DrinkId "orange-juice"; DrinkType = OrangeJuice; Price = Price 0.6m}
+        let quantityOfSugar = 1
+        let money = 0.6m
+        let extraHot = true
+
+        let result = DrinkOrder.prepareWith quantityOfSugar money extraHot coffee
+        
+        let expectedOrder = DrinkOrder.reconstitute OrangeJuice WithOneSugar AddStick Normal (TotalOfMoney 0.6m)
         Assert.Equal(Ok expectedOrder, result)
 
     [<Fact>]
@@ -32,8 +58,9 @@ type ``drink order aggregate should``() =
         let coffee: Drink = {DrinkId = DrinkId "coffee"; DrinkType = Coffee; Price = Price 0.6m}
         let quantityOfSugar = 0
         let money = 0.5m
+        let extraHot = false
 
-        let result = DrinkOrder.prepareWith quantityOfSugar money coffee
+        let result = DrinkOrder.prepareWith quantityOfSugar money extraHot coffee
         
         Assert.Equal(Error (NotEnoughMoney(moneyMissing=0.1m)), result)
 
@@ -42,8 +69,9 @@ type ``drink order aggregate should``() =
         let coffee: Drink = {DrinkId = DrinkId "coffee"; DrinkType = Coffee; Price = Price 0.6m}
         let quantityOfSugar = 10
         let amountOfMoney = 0.6m
+        let extraHot = false
 
-        let result = DrinkOrder.prepareWith quantityOfSugar amountOfMoney coffee
+        let result = DrinkOrder.prepareWith quantityOfSugar amountOfMoney extraHot coffee
         
         Assert.Equal(Error InvalidQuantityOfSugar, result)
 

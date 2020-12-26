@@ -23,6 +23,7 @@ module OutboundAdapters =
             | Tea -> "T" 
             | Coffee -> "C"
             | Chocolate -> "H"
+            | OrangeJuice -> "O"
         
         let private translateSugar (sugar: Sugar) = 
             match sugar with 
@@ -34,9 +35,14 @@ module OutboundAdapters =
             match stick with 
             | NoStick -> ""
             | AddStick -> "O" 
+        
+        let private translateTemperature (temperature: Temperature) =
+            match temperature with 
+            | Normal -> ""
+            | ExtraHot -> "h" 
 
         let makeDrink (drinkMaker: DrinkMakerDriver): Dependencies.MakeDrink = fun (drinkOrder: DrinkOrder) -> 
-            $"{translateDrink drinkOrder.DrinkType}:{translateSugar drinkOrder.Sugar}:{translateStick drinkOrder.Stick}"
+            $"{translateDrink drinkOrder.DrinkType}{translateTemperature drinkOrder.Temperature}:{translateSugar drinkOrder.Sugar}:{translateStick drinkOrder.Stick}"
             |> drinkMaker.ReceiveCommand
 
         let displayMessage (drinkMaker: DrinkMakerDriver): Dependencies.DisplayMessage = fun (Message message) ->
