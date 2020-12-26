@@ -118,16 +118,3 @@ module DomainServices =
         | InvalidQuantityOfSugar -> displayMessage (Message "Invalid quantity of sugar")
         | NonExistentProduct code -> displayMessage (Message $"Non existent product with code '{code}'")
        
-
-          // type DrinkOrdered = {a: string}
-
-    // type DomainEvent =
-    //     DrinkOrdered of DrinkOrdered 
-     
-    // let d = DrinkOrdered {a = ""}
-
-    // type DomainEvent =
-        // DrinkOrdered of string 
-
-    // let createEvents 
-    // publishEvents then check there 
