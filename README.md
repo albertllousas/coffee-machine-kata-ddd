@@ -10,22 +10,23 @@ Please, **forgive me in advance**, I am developer mainly focused on JVM language
 
 ## Kata
 
-This [kata](https://simcap.github.io/coffeemachine/) is an iterative kata that consist in 5 steps, the idea is to see is yout code is evolvable and able to adapt to changes.
+This [kata](https://simcap.github.io/coffeemachine/) is an iterative kata that consist in 5 steps, the idea is to see if the code that we create is evolvable and able to adapt to changes.
 
-- First iteration
-- Second iteration
-- Third iteration
-- Fourth iteration
-- Fifth iteration
+- [First iteration](https://simcap.github.io/coffeemachine/cm-first-iteration.html)
+- [Second iteration](https://simcap.github.io/coffeemachine/cm-second-iteration.html)
+- [Third iteration](https://simcap.github.io/coffeemachine/cm-third-iteration.html)
+- [Fourth iteration](https://simcap.github.io/coffeemachine/cm-fourth-iteration.html)
+- [Fifth iteration](https://simcap.github.io/coffeemachine/cm-fifth-iteration.html)
 
 ## Important design note
 
-For the sake of simplicity, we have code this kata with the assumption that is not necessary to be reliable in terms of side effects, it means that this code can not guarantee a safe message display, reporting updates, message displaying or system recovery if the system goes down or we have a failure in the middle of the flow.
+For the sake of simplicity, we have code this kata with the assumption that is not necessary to be reliable in terms of side effects, it means that this code can not guarantee a safe message display, reporting updates or system recovery if the system goes down or we have a crash in the middle of the flow.
 
-These kind of problems are typical in a distributed systems and are know as [**dual writes**](https://thorben-janssen.com/dual-writes/).
+These kinds of problems are typical in distributed systems and are known as [**dual writes**](https://thorben-janssen.com/dual-writes/).
 
-If we would want to achive a more reliable and consistent system we would need to introduce more complexity, a solution would be to introduce an async flow, **domain events** and solve the dual writes with [**transactional outbox pattern**](https://microservices.io/patterns/data/transactional-outbox.html), for example.
+If we would want to achive a more reliable and consistent system we would need to introduce more complexity, a solution would be to introduce an async flow, create and publish **domain events** and solve the dual writes with [**transactional outbox pattern**](https://microservices.io/patterns/data/transactional-outbox.html), for example.
 
+If this was a real production system, I would ask the domain experts which kind of reliability we want ... it is important to miss a report update? Can we deal with eventual consistency? And design the system accordingly ...
 
 ## Tests
 
