@@ -98,11 +98,13 @@ module Dependencies =
 
     type FindDrink = DrinkId -> Result<Drink, Error>
 
-    type MakeDrink = DrinkOrder -> unit
+    type MakeDrink = DrinkOrder -> Result<Drink, Error> // catch error
+
+    type UpdateStatistics = DrinkOrder -> unit
 
     type DisplayMessage = Message -> unit
 
-    type DisplayErrorMessage = Error -> unit
+    type HandleDrinkNotServed = Error -> unit
 
     // type PublishEvents = DomainEvent list -> unit
     

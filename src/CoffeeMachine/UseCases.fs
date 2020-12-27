@@ -16,5 +16,6 @@ module UseCases =
         findDrink (DrinkId request.DrinkId)
         |> Result.bind (prepareOrder request.Sugar request.Money request.ExtraHot)
         |> Result.map makeDrink
-        |> Result.mapError displayErrorMessage
+        |> Result.map updateStatistics
+        |> Result.mapError handleDrinkNotServed
         |> ignore

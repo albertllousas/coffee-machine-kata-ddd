@@ -18,9 +18,9 @@ This [kata](https://simcap.github.io/coffeemachine/) is an iterative kata that c
 - [Fourth iteration](https://simcap.github.io/coffeemachine/cm-fourth-iteration.html)
 - [Fifth iteration](https://simcap.github.io/coffeemachine/cm-fifth-iteration.html)
 
-## Important design note
+## Important design note!!!
 
-For the sake of simplicity, we have code this kata with the assumption that is not necessary to be reliable in terms of side effects, it means that this **code can not guarantee a safe message display, reporting updates or system recovery** if the system goes down or we have a crash in the middle of the flow.
+For the sake of simplicity, we have code this kata with the assumption that is not necessary to be reliable in terms of side effects, it means that this **code can not guarantee a safe message display, report updates or a consistent system recovery** if the system goes down or we have a crash in the middle of the flow.
 
 These kinds of problems are typical in distributed systems and are known as [**dual writes**](https://thorben-janssen.com/dual-writes/).
 
@@ -28,23 +28,23 @@ If we would want to achieve a more reliable and consistent system we would need 
 
 ### Idea for a reliable solution:
 
-One async flow with domain events could be:
+One async flow with domain events could be to split the process in different asynchronous steps:
  
-- Create drink order:
-    - Create drink order
+- Create a drink order:
+    - Create drink order applying all the logic, same as it is now
     - Save it 
     - Publish event `DrinkOrderCreated` or `DrinkOrderFailed` in a reliable manner
-- Make the drink, subscribe to `DrinkOrderCreated` event and trigger a usesase/commandhandler to:
-    - Get the drink 
-    - Call an **idempotent drink maker** (even though make drink is a side-effect, it is part of the actual business)
-    - Change drinkOrder aggregate state
+- Process the drink order, actually, make the drink; React to `DrinkOrderCreated` event and trigger a use-case (akka command-handler or application-service) and then:
+    - Get the drink order
+    - Call an **idempotent drink maker** (even though make drink is a side-effect, it is part of the business)
+    - Change the state of the drinkOrder aggregate
     - Save the aggregate and publish the events `DrinkOrderServed` or `DrinkOrderFailed`
-- To handle non-business side effects in a reliable manner we could subscribe to events and publish them to an outboxs tables, then with message relay mechanisms:
+- To handle non-business side effects in a reliable manner we could subscribe to events and use transactional outbox for message relay to:
     - Display message 
     - Update report
     - Send email for missing drink
 
-There are a lot of variations, as complex as you want, **but do we really need this right now?** if this was a real production system I would ask the domain experts which kind of reliability we want ... it is important to miss a report update? Can we deal with eventual consistency? And design the system accordingly ...
+There are a lot of variations, as complex as you want, **but do we really need this right now?** if this was a real production system I would ask the domain experts which kind of reliability we want ... is it important if we miss a report update? Can we deal with eventual consistency? And design the system accordingly ...
 
 ## Tests
 
