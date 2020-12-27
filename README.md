@@ -37,8 +37,8 @@ One async flow with domain events could be:
 - Make the drink, subscribe to `DrinkOrderCreated` event and trigger a usesase/commandhandler to:
     - Get the drink 
     - Call an **idempotent drink maker** (even though make drink is a side-effect, it is part of the actual business)
-    - Move drinkOrder aggregate to `DrinkOrderServed` or `DrinkOrderFailed`
-    - Save the aggregate and publish the events
+    - Change drinkOrder aggregate state
+    - Save the aggregate and publish the events `DrinkOrderServed` or `DrinkOrderFailed`
 - To handle non-business side effects in a reliable manner we could subscribe to events and publish them to an outboxs tables, then with message relay mechanisms:
     - Display message 
     - Update report
