@@ -20,13 +20,15 @@ This [kata](https://simcap.github.io/coffeemachine/) is an iterative kata that c
 
 ## Important design note
 
-For the sake of simplicity, we have code this kata with the assumption that is not necessary to be reliable in terms of side effects, it means that this code can not guarantee a safe message display, reporting updates or system recovery if the system goes down or we have a crash in the middle of the flow.
+For the sake of simplicity, we have code this kata with the assumption that is not necessary to be reliable in terms of side effects, it means that this **code can not guarantee a safe message display, reporting updates or system recovery** if the system goes down or we have a crash in the middle of the flow.
 
 These kinds of problems are typical in distributed systems and are known as [**dual writes**](https://thorben-janssen.com/dual-writes/).
 
 If we would want to achieve a more reliable and consistent system we would need to introduce more complexity, a solution would be to introduce an async flow, create and publish **domain events**, and solve the dual writes with [**transactional outbox pattern**](https://microservices.io/patterns/data/transactional-outbox.html), for example.
 
- One async flow with domain events could be:
+### Idea for a reliable solution:
+
+One async flow with domain events could be:
  
 - Create drink order:
     - Create drink order
@@ -42,7 +44,7 @@ If we would want to achieve a more reliable and consistent system we would need 
     - Update report
     - Send email for missing drink
 
-There are a lot of variations, as complex as you want, but if this was a real production system I would ask the domain experts which kind of reliability we want ... it is important to miss a report update? Can we deal with eventual consistency? And design the system accordingly ...
+There are a lot of variations, as complex as you want, **but do we really need this right now?** if this was a real production system I would ask the domain experts which kind of reliability we want ... it is important to miss a report update? Can we deal with eventual consistency? And design the system accordingly ...
 
 ## Tests
 
@@ -53,5 +55,3 @@ dotnet test
 ## Requirements
 
  Dotnet Version: `5.0.101`
-
-## Fake App
