@@ -24,9 +24,25 @@ For the sake of simplicity, we have code this kata with the assumption that is n
 
 These kinds of problems are typical in distributed systems and are known as [**dual writes**](https://thorben-janssen.com/dual-writes/).
 
-If we would want to achive a more reliable and consistent system we would need to introduce more complexity, a solution would be to introduce an async flow, create and publish **domain events** and solve the dual writes with [**transactional outbox pattern**](https://microservices.io/patterns/data/transactional-outbox.html), for example.
+If we would want to achieve a more reliable and consistent system we would need to introduce more complexity, a solution would be to introduce an async flow, create and publish **domain events**, and solve the dual writes with [**transactional outbox pattern**](https://microservices.io/patterns/data/transactional-outbox.html), for example.
 
-If this was a real production system, I would ask the domain experts which kind of reliability we want ... it is important to miss a report update? Can we deal with eventual consistency? And design the system accordingly ...
+ One async flow with domain events could be:
+ 
+- Create drink order:
+    - Create drink order
+    - Save it 
+    - Publish event `DrinkOrderCreated` or `DrinkOrderFailed` in a reliable manner
+- Make the drink, subscribe to `DrinkOrderCreated` event and trigger a usesase/commandhandler to:
+    - Get the drink 
+    - Call an **idempotent drink maker** (even though make drink is a side-effect, it is part of the actual business)
+    - Move drinkOrder aggregate to `DrinkOrderServed` or `DrinkOrderFailed`
+    - Save the aggregate and publish the events
+- To handle non-business side effects in a reliable manner we could subscribe to events and publish them to an outboxs tables, then with message relay mechanisms:
+    - Display message 
+    - Update report
+    - Send email for missing drink
+
+There are a lot of variations, as complex as you want, but if this was a real production system I would ask the domain experts which kind of reliability we want ... it is important to miss a report update? Can we deal with eventual consistency? And design the system accordingly ...
 
 ## Tests
 
