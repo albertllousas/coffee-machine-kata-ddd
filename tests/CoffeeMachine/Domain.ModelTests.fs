@@ -14,7 +14,7 @@ type ``drink order aggregate should``() =
 
         let result = DrinkOrder.prepareWith quantityOfSugar money extraHot coffee
         
-        let expectedOrder = DrinkOrder.reconstitute Coffee NoSugar NoStick Normal (TotalOfMoney 0.6m)
+        let expectedOrder = DrinkOrder.reconstitute coffee NoSugar NoStick Normal (TotalOfMoney 0.6m)
         Assert.Equal(Ok expectedOrder, result)
 
     [<Fact>]
@@ -26,7 +26,7 @@ type ``drink order aggregate should``() =
 
         let result = DrinkOrder.prepareWith quantityOfSugar money extraHot coffee
         
-        let expectedOrder = DrinkOrder.reconstitute Coffee WithOneSugar AddStick Normal (TotalOfMoney 0.6m)
+        let expectedOrder = DrinkOrder.reconstitute coffee WithOneSugar AddStick Normal (TotalOfMoney 0.6m)
         Assert.Equal(Ok expectedOrder, result)
 
     [<Fact>]
@@ -38,19 +38,19 @@ type ``drink order aggregate should``() =
 
         let result = DrinkOrder.prepareWith quantityOfSugar money extraHot coffee
         
-        let expectedOrder = DrinkOrder.reconstitute Coffee WithOneSugar AddStick ExtraHot (TotalOfMoney 0.6m)
+        let expectedOrder = DrinkOrder.reconstitute coffee WithOneSugar AddStick ExtraHot (TotalOfMoney 0.6m)
         Assert.Equal(Ok expectedOrder, result)
 
     [<Fact>]
     let ``disable hot drink if orange juice`` () =
-        let coffee: Drink = {DrinkId = DrinkId "orange-juice"; DrinkType = OrangeJuice; Price = Price 0.6m}
+        let orangeJuice: Drink = {DrinkId = DrinkId "orange-juice"; DrinkType = OrangeJuice; Price = Price 0.6m}
         let quantityOfSugar = 1
         let money = 0.6m
         let extraHot = true
 
-        let result = DrinkOrder.prepareWith quantityOfSugar money extraHot coffee
+        let result = DrinkOrder.prepareWith quantityOfSugar money extraHot orangeJuice
         
-        let expectedOrder = DrinkOrder.reconstitute OrangeJuice WithOneSugar AddStick Normal (TotalOfMoney 0.6m)
+        let expectedOrder = DrinkOrder.reconstitute orangeJuice WithOneSugar AddStick Normal (TotalOfMoney 0.6m)
         Assert.Equal(Ok expectedOrder, result)
 
     [<Fact>]
@@ -110,13 +110,13 @@ open CoffeeMachine.Domain.Model.DomainServices
 type Consume<'t> =
     abstract fn: 't -> unit
 
-type ``display error message domain service should``() =
+type ``handle drink not served domain service should``() =
 
     [<Fact>]
     let ``display a message when not enough money`` () =
         let displayMessageMock = Mock.Of<Consume<Message>>()
 
-        displayErrorMessage displayMessageMock.fn (NotEnoughMoney(moneyMissing = 0.1m))
+        handleDrinkNotServed displayMessageMock.fn (NotEnoughMoney(moneyMissing = 0.1m))
 
         verify <@ displayMessageMock.fn (Message $"Not enough money, please add 0.1 more") @>
     
@@ -124,7 +124,7 @@ type ``display error message domain service should``() =
     let ``display a message when invalid quantity of sugar`` () =
         let displayMessageMock = Mock.Of<Consume<Message>>()
 
-        displayErrorMessage displayMessageMock.fn InvalidQuantityOfSugar
+        handleDrinkNotServed displayMessageMock.fn InvalidQuantityOfSugar
 
         verify <@ displayMessageMock.fn (Message "Invalid quantity of sugar") @>
     
@@ -132,6 +132,14 @@ type ``display error message domain service should``() =
     let ``display a message when non existent product`` () =
         let displayMessageMock = Mock.Of<Consume<Message>>()
 
-        displayErrorMessage displayMessageMock.fn (NonExistentProduct(productCode = "coke") )
+        handleDrinkNotServed displayMessageMock.fn (NonExistentProduct(productCode = "coke") )
+
+        verify <@ displayMessageMock.fn (Message $"Non existent product with code 'coke'") @>
+
+    [<Fact>]
+    let ``display a message when drink maker fails`` () =
+        let displayMessageMock = Mock.Of<Consume<Message>>()
+
+        handleDrinkNotServed displayMessageMock.fn (DrinkMakerError(error = "boom") )
 
         verify <@ displayMessageMock.fn (Message $"Non existent product with code 'coke'") @>

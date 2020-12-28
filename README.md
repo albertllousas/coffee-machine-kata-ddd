@@ -31,11 +31,12 @@ If we would want to achieve a more reliable and consistent system we would need 
 One async flow with domain events could be to split the process in different asynchronous steps:
  
 - Create a drink order:
-    - Create drink order applying all the logic, same as it is now
+    - Create `DrinkOrder` applying all the logic, same as it is now
     - Save it 
     - Publish event `DrinkOrderCreated` or `DrinkOrderFailed` in a reliable manner
-- Process the drink order, actually, make the drink; React to `DrinkOrderCreated` event and trigger a use-case (akka command-handler or application-service) and then:
-    - Get the drink order
+- Process the drink order, actually, make the drink; 
+    - React to `DrinkOrderCreated` event and trigger a use-case (akka command-handler or application-service).
+    - Find the `DrinkOrder`
     - Call an **idempotent drink maker** (even though make drink is a side-effect, it is part of the business)
     - Change the state of the drinkOrder aggregate
     - Save the aggregate and publish the events `DrinkOrderServed` or `DrinkOrderFailed`

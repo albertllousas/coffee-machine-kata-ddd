@@ -8,6 +8,7 @@ module Types =
         | NonExistentProduct of productCode: string
         | InvalidQuantityOfSugar
         | NotEnoughMoney of moneyMissing: decimal
+        | DrinkMakerError of error: string
 
     type Sugar =
         | NoSugar
@@ -52,8 +53,8 @@ module Types =
 
     type TotalOfMoney = TotalOfMoney of decimal
 
-    type DrinkOrder = private { drinkType: DrinkType; sugar: Sugar; stick: Stick; temperature: Temperature; totalOfMoney: TotalOfMoney } with
-        member this.DrinkType = this.drinkType
+    type DrinkOrder = private { drink: Drink; sugar: Sugar; stick: Stick; temperature: Temperature; totalOfMoney: TotalOfMoney } with
+        member this.Drink = this.drink
         member this.Sugar = this.sugar
         member this.Stick = this.stick
         member this.TotalOfMoney = this.totalOfMoney
@@ -75,14 +76,11 @@ module Types =
                   let! money = checkEnoughMoney drink.Price moneyGiven
                   let stick = Stick.from sugar 
                   let temperature = calculateTemperature extraHot drink.DrinkType
-                  return { drinkType = drink.DrinkType; sugar = sugar; stick = stick; temperature = temperature; totalOfMoney = TotalOfMoney money }
+                  return { drink = drink; sugar = sugar; stick = stick; temperature = temperature; totalOfMoney = TotalOfMoney money }
             }
    
-        let reconstitute drinkType sugar stick temperature totalOfMoney =  
-            { drinkType = drinkType; sugar = sugar; stick = stick; temperature = temperature; totalOfMoney = totalOfMoney }
-        
-        // active pattern    
-        let (|DrinkOrder|) {drinkType = drinkType; sugar = sugar; stick = stick} =  (drinkType, sugar, stick)
+        let reconstitute drink sugar stick temperature totalOfMoney =  
+            { drink = drink; sugar = sugar; stick = stick; temperature = temperature; totalOfMoney = totalOfMoney }
 
 module Dependencies = 
 
@@ -98,7 +96,7 @@ module Dependencies =
 
     type FindDrink = DrinkId -> Result<Drink, Error>
 
-    type MakeDrink = DrinkOrder -> Result<Drink, Error> // catch error
+    type MakeDrink = DrinkOrder -> Result<DrinkOrder, Error> // catch error
 
     type UpdateStatistics = DrinkOrder -> unit
 
@@ -106,30 +104,17 @@ module Dependencies =
 
     type HandleDrinkNotServed = Error -> unit
 
-    // type PublishEvents = DomainEvent list -> unit
-    
+    type PrintStatistics = unit -> unit
+
 module DomainServices = 
 
     open Types
 
     open Dependencies
 
-    let displayErrorMessage (displayMessage:DisplayMessage) : DisplayErrorMessage = fun (error: Error) -> 
+    let handleDrinkNotServed (displayMessage:DisplayMessage) : HandleDrinkNotServed = fun (error: Error) -> 
         match error with 
         | NotEnoughMoney missingMoney -> displayMessage (Message $"Not enough money, please add {missingMoney} more")
         | InvalidQuantityOfSugar -> displayMessage (Message "Invalid quantity of sugar")
         | NonExistentProduct code -> displayMessage (Message $"Non existent product with code '{code}'")
-       
-
-          // type DrinkOrdered = {a: string}
-
-    // type DomainEvent =
-    //     DrinkOrdered of DrinkOrdered 
-     
-    // let d = DrinkOrdered {a = ""}
-
-    // type DomainEvent =
-        // DrinkOrdered of string 
-
-    // let createEvents 
-    // publishEvents then check there 
+        | DrinkMakerError _ -> displayMessage (Message $"Sorry, there was an error making a drink'")

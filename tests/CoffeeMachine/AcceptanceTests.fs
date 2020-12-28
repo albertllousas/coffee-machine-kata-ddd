@@ -29,3 +29,15 @@ let ``display an error message when not enough money is provided`` () =
     app.Pad.ProcessCustomerOrder request
 
     Assert.Equal("M:Not enough money, please add 0.3 more", List.head app.DrinkMaker.ReceivedCommands)
+
+[<Fact>]
+let ``print report`` () =
+    let app = App()
+        
+    app.Pad.ProcessCustomerOrder { DrinkId = "tea"; Sugar = 1; ExtraHot = false; Money = 0.6m }
+    app.Pad.ProcessCustomerOrder { DrinkId = "tea"; Sugar = 1; ExtraHot = false; Money = 0.6m }
+    
+    app.Pad.PrintReport()
+
+    Assert.Equal("total = 0.8", List.head app.Printer.PrintedLines)
+    Assert.Equal("Tea = 2", List.last app.Printer.PrintedLines)
