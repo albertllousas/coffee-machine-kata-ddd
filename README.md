@@ -33,9 +33,9 @@ One async flow with domain events could be to split the process in different asy
 - Create a drink order:
     - Create `DrinkOrder` applying all the logic, same as it is now
     - Save it 
-    - Publish event `DrinkOrderCreated` or `DrinkOrderFailed` ( we could use a simple event bus if we are going to use the same db tx or tx-outbox if want more isolation and scalability)
-- Process the drink order, actually, make the drink; 
-    - React to `DrinkOrderCreated` event and trigger a use-case (akka command-handler or application-service).
+    - Publish event `DrinkOrderCreated` or `DrinkOrderFailed`
+- Serve the drink order, actually, make the drink; 
+    - React to `DrinkOrderCreated` event and trigger the use-case to serve the drink (dispatching could be done with an simple event-bus if we reuse the same db-tx or tx-otbox for more isolation).
     - Find the `DrinkOrder`
     - Call an **idempotent drink maker** (even though make drink is a side-effect, it is part of the business)
     - Change the state of the drinkOrder aggregate
