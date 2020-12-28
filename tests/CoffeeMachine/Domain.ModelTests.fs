@@ -115,31 +115,45 @@ type ``handle drink not served domain service should``() =
     [<Fact>]
     let ``display a message when not enough money`` () =
         let displayMessageMock = Mock.Of<Consume<Message>>()
+        let notifyMissingDrinkMock = Mock.Of<Consume<string>>()
 
-        handleDrinkNotServed displayMessageMock.fn (NotEnoughMoney(moneyMissing = 0.1m))
+        handleDrinkNotServed displayMessageMock.fn notifyMissingDrinkMock.fn (NotEnoughMoney(moneyMissing = 0.1m))
 
         verify <@ displayMessageMock.fn (Message $"Not enough money, please add 0.1 more") @>
     
     [<Fact>]
     let ``display a message when invalid quantity of sugar`` () =
         let displayMessageMock = Mock.Of<Consume<Message>>()
+        let notifyMissingDrinkMock = Mock.Of<Consume<string>>()
 
-        handleDrinkNotServed displayMessageMock.fn InvalidQuantityOfSugar
+        handleDrinkNotServed displayMessageMock.fn notifyMissingDrinkMock.fn InvalidQuantityOfSugar
 
         verify <@ displayMessageMock.fn (Message "Invalid quantity of sugar") @>
     
     [<Fact>]
     let ``display a message when non existent product`` () =
         let displayMessageMock = Mock.Of<Consume<Message>>()
+        let notifyMissingDrinkMock = Mock.Of<Consume<string>>()
 
-        handleDrinkNotServed displayMessageMock.fn (NonExistentProduct(productCode = "coke") )
+        handleDrinkNotServed displayMessageMock.fn notifyMissingDrinkMock.fn (NonExistentProduct(productCode = "coke") )
 
         verify <@ displayMessageMock.fn (Message $"Non existent product with code 'coke'") @>
 
     [<Fact>]
     let ``display a message when drink maker fails`` () =
         let displayMessageMock = Mock.Of<Consume<Message>>()
+        let notifyMissingDrinkMock = Mock.Of<Consume<string>>()
 
-        handleDrinkNotServed displayMessageMock.fn (DrinkMakerError(error = "boom") )
+        handleDrinkNotServed displayMessageMock.fn notifyMissingDrinkMock.fn (DrinkMakerError(error = "boom") )
 
         verify <@ displayMessageMock.fn (Message $"Non existent product with code 'coke'") @>
+
+    [<Fact>]
+    let ``send and email notification and display a message when there is a drink shortage`` () =
+        let displayMessageMock = Mock.Of<Consume<Message>>()
+        let notifyMissingDrinkMock = Mock.Of<Consume<string>>()
+
+        handleDrinkNotServed displayMessageMock.fn notifyMissingDrinkMock.fn (Shortage(productCode = "tea") )
+
+        verify <@ notifyMissingDrinkMock.fn "tea" @> once
+        verify <@ displayMessageMock.fn (Message $"Sorry, there is no more tea, a notification to refill it has been sent") @> once

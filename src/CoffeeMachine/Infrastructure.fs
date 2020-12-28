@@ -54,13 +54,37 @@ module OutboundAdapters =
 
     module FindDrinkAdapter =
 
-        type InMemoryDrinkRepository() =
-            member this.FindDrink: Dependencies.FindDrink = fun drinkId ->
-                match drinkId with 
-                | DrinkId "tea" -> Ok { DrinkId = drinkId; DrinkType = Tea; Price = Price 0.4m }
-                | DrinkId "coffee" -> Ok { DrinkId = drinkId; DrinkType = Coffee; Price = Price 0.6m }
-                | DrinkId "chocolate" -> Ok { DrinkId = drinkId; DrinkType = Chocolate; Price = Price 0.5m }
-                | DrinkId nonExistentId -> Error (NonExistentProduct(productCode = nonExistentId))
+        [<AbstractClass>]
+        type BeverageQuantityChecker() =
+            abstract member IsEmpty: string -> bool
+        
+        type FakeBeverageQuantityChecker() =
+            inherit BeverageQuantityChecker()
+            member val Empty: bool  = false with get, set
+            override this.IsEmpty _ = this.Empty
+               
+
+        type InMemoryDrinkRepository(beverageQuantityChecker: BeverageQuantityChecker) =
+            member this.FindDrink: Dependencies.FindDrink = fun (DrinkId code) ->
+                match code with 
+                | "tea" -> Ok { DrinkId = DrinkId code; DrinkType = Tea; Price = Price 0.4m }
+                | "coffee" -> Ok { DrinkId = DrinkId code; DrinkType = Coffee; Price = Price 0.6m }
+                | "chocolate" -> Ok { DrinkId = DrinkId code; DrinkType = Chocolate; Price = Price 0.5m }
+                | nonExistentId -> Error (NonExistentProduct(productCode = nonExistentId))
+                |> Result.bind (fun drink -> if beverageQuantityChecker.IsEmpty code then Error (Shortage(productCode= code)) else Ok drink )
+                   
+
+    module EmailNotifierAdapter  =
+
+        [<AbstractClass>]
+        type EmailNotifier() =
+            abstract member NotifyMissingDrink: Dependencies.NotifyMissingDrink
+        
+        type FakeEmailNotifier() =
+            inherit EmailNotifier()
+            member val ReceivedEmails: string list = [] with get, set
+            override this.NotifyMissingDrink : Dependencies.NotifyMissingDrink = fun drink ->
+                this.ReceivedEmails <- this.ReceivedEmails @ [ drink ]
 
     module UpdateStatisticsAdapter =
 
@@ -103,17 +127,25 @@ module FakeApplication =
 
     type App() = 
         let printer =  FakePrinter()
+        let emailNotifier = EmailNotifierAdapter.FakeEmailNotifier()
         let drinkMaker = FakeDrinkMaker()
-        let drinkRepository = FindDrinkAdapter.InMemoryDrinkRepository()
+
+        let beverageQuantityChecker = FindDrinkAdapter.FakeBeverageQuantityChecker()
+        let drinkRepository = FindDrinkAdapter.InMemoryDrinkRepository(beverageQuantityChecker)
         let makeDrink: MakeDrink = DrinkMakerWithStringProtocolAdapter.makeDrink drinkMaker
         let displayMessage: DisplayMessage = DrinkMakerWithStringProtocolAdapter.displayMessage drinkMaker
-        let handleDrinkNotServed: HandleDrinkNotServed = DomainServices.handleDrinkNotServed displayMessage 
         let inMemoryStatistics = UpdateStatisticsAdapter.InMemoryStatistics()
+
+        let handleDrinkNotServed: HandleDrinkNotServed = DomainServices.handleDrinkNotServed displayMessage emailNotifier.NotifyMissingDrink
         let updateStatistics: UpdateStatistics = inMemoryStatistics.Update
         let printStatistics: PrintStatistics = inMemoryStatistics.Print printer.Print
         let prepareOrder: PrepareOrder = DrinkOrder.prepareWith
+
         let serveDrinkUseCase = UseCases.serveDrink drinkRepository.FindDrink handleDrinkNotServed prepareOrder makeDrink updateStatistics   
         let printReportUsecase = UseCases.printReport printStatistics   
+        
         member this.Pad = FakePad(serveDrinkUseCase, printReportUsecase)
         member this.DrinkMaker = drinkMaker
         member this.Printer = printer
+        member this.EmailNotifier = emailNotifier
+        member this.BeverageQuantityChecker = beverageQuantityChecker

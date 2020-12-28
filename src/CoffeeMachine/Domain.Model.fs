@@ -9,6 +9,7 @@ module Types =
         | InvalidQuantityOfSugar
         | NotEnoughMoney of moneyMissing: decimal
         | DrinkMakerError of error: string
+        | Shortage of productCode: string
 
     type Sugar =
         | NoSugar
@@ -106,15 +107,20 @@ module Dependencies =
 
     type PrintStatistics = unit -> unit
 
+    type NotifyMissingDrink = string -> unit
+
 module DomainServices = 
 
     open Types
 
     open Dependencies
 
-    let handleDrinkNotServed (displayMessage:DisplayMessage) : HandleDrinkNotServed = fun (error: Error) -> 
+    let handleDrinkNotServed (displayMessage:DisplayMessage) (notifyMissingDrink: NotifyMissingDrink): HandleDrinkNotServed = fun (error: Error) -> 
         match error with 
         | NotEnoughMoney missingMoney -> displayMessage (Message $"Not enough money, please add {missingMoney} more")
         | InvalidQuantityOfSugar -> displayMessage (Message "Invalid quantity of sugar")
         | NonExistentProduct code -> displayMessage (Message $"Non existent product with code '{code}'")
         | DrinkMakerError _ -> displayMessage (Message $"Sorry, there was an error making a drink'")
+        | Shortage code -> 
+            notifyMissingDrink code
+            displayMessage (Message $"Sorry, there is no more {code}, a notification to refill it has been sent")

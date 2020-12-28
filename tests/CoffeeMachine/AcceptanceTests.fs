@@ -41,3 +41,18 @@ let ``print report`` () =
 
     Assert.Equal("total = 0.8", List.head app.Printer.PrintedLines)
     Assert.Equal("Tea = 2", List.last app.Printer.PrintedLines)
+
+[<Fact>]
+let ``send and email notification and display a message when there is a drink shortage`` () =
+    let app = App()
+    app.BeverageQuantityChecker.Empty <- true
+    let request: UseCases.DrinkRequest =
+        { DrinkId = "tea"
+          Sugar = 1
+          ExtraHot = false
+          Money = 0.5m }
+
+    app.Pad.ProcessCustomerOrder request
+
+    Assert.Equal("M:Sorry, there is no more tea, a notification to refill it has been sent", List.head app.DrinkMaker.ReceivedCommands)
+    Assert.Equal("tea", List.head app.EmailNotifier.ReceivedEmails)
