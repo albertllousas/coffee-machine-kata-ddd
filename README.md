@@ -20,30 +20,28 @@ This [kata](https://simcap.github.io/coffeemachine/) is an iterative kata that c
 
 ## Important design note!!!
 
-For the sake of simplicity, we have code this kata with the assumption that is not necessary to be reliable in terms of side effects, it means that this **code can not guarantee a safe message display, report updates or a consistent system recovery** if the system goes down or we have a crash in the middle of the flow.
-
-These kinds of problems are typical in distributed systems and are known as [**dual writes**](https://thorben-janssen.com/dual-writes/).
-
-If we wanted to achieve a more reliable and consistent system we would need to introduce more complexity, a solution would be to introduce an async flow, create and publish **domain events**, and solve the dual writes with [**transactional outbox pattern**](https://microservices.io/patterns/data/transactional-outbox.html), for example.
+For the sake of simplicity, we have coded this kata with the assumption that is not necessary to have a reliable code, it means that this **code can not guarantee a safe message display, report updates or a consistent system recovery** if the system goes down or we have a crash in the middle of the flow.
 
 ### Idea for a reliable solution:
 
-One async flow with domain events could be to split the process in different asynchronous steps:
+If we wanted to achieve a more reliable and consistent system we would need to introduce more complexity, one solution could be split the flow in single async steps, each one with one single responsibility:
+
+For example:
  
 - Create a drink order:
     - Create `DrinkOrder` applying all the logic, same as it is now
-    - Save it 
-    - Publish event `DrinkOrderCreated` or `DrinkOrderFailed`
+    - Save the order
+    - Publish a **domain event** `DrinkOrderCreated` or `DrinkOrderFailed`
 - Serve the drink order, actually, make the drink; 
-    - React to `DrinkOrderCreated` event and trigger the use-case to serve the drink (dispatching could be done with an simple event-bus if we reuse the same db-tx or tx-otbox for more isolation).
+    - React to `DrinkOrderCreated` domain event and trigger the use-case to serve the drink (dispatching could be done with an simple event-bus if we reuse the same db-tx or tx-outbox for more isolation).
     - Find the `DrinkOrder`
-    - Call an **idempotent drink maker** (even though make drink is a side-effect, it is part of the business)
+    - Call an **idempotent drink maker** (even though make drink is a side-effect, it is part of the business, our system mainly is about communication with the drink maker)
     - Change the state of the drinkOrder aggregate
-    - Save the aggregate and publish the events `DrinkOrderServed` or `DrinkOrderFailed`
-- To handle non-business side effects with reliable delivery we could subscribe to the events and use transactional outbox for message relay to:
-    - Display message 
-    - Update report
-    - Send email for missing drink
+    - Save the aggregate and publish the domain event `DrinkOrderServed` or `DrinkOrderFailed`
+- To handle [**dual-writes**](https://thorben-janssen.com/dual-writes/) we could subscribe to the events and use [**transactional outbox pattern**](https://microservices.io/patterns/data/transactional-outbox.html to safely:
+    - Display messages 
+    - Update reports
+    - Send emails for missing drink
 
 There are a lot of variations, as complex as you want, **but do we really need this right now?** if this was a real production system I would ask the domain experts which kind of reliability we want ... is it important if we miss a report update? Can we deal with eventual consistency? And design the system accordingly ...
 
